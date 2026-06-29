@@ -355,6 +355,7 @@ td.c,th.c{text-align:center}
     <button id="btnCourses" class="btn ghost">🗺️ 추천 코스</button>
     <button id="btnSettings" class="btn ghost">⚙️ 설정 — 코스 · 일정 · 레벨</button>
     <button class="btn ghost" onclick="show('login')">🏠 처음 화면으로</button>
+    <button class="btn ghost" onclick="if(confirm('이 기기에서 처음부터 새로 시작할까요?')){localStorage.removeItem('bike_profile');localStorage.removeItem('bike_logs');location.reload();}">🔄 다른 사람으로 시작</button>
     <div class="foot">기록은 <span id="footMode">이 기기</span>에 저장돼요 · 제주 자전거 · jeju-bicycle</div>
   </section>
 
