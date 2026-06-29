@@ -58,6 +58,8 @@ textarea.txt{resize:vertical;min-height:54px}
 .pledge input{width:22px;height:22px;margin-top:1px;accent-color:var(--sunrise)}
 .pledge span{font-size:13.5px;line-height:1.45}
 .btn{display:block;width:100%;padding:15px;font-family:"Jua",sans-serif;font-size:18px;color:#fff;background:linear-gradient(135deg,var(--sunrise),#ff9b62);box-shadow:0 8px 18px rgba(244,121,78,.32);margin-top:16px}
+.menu{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.menu .btn{flex:1 1 0;width:auto;min-width:80px;margin:0;padding:12px 6px;font-size:13px;box-shadow:0 4px 10px rgba(0,0,0,.06)}
 .btn:disabled{filter:grayscale(.7);opacity:.55;box-shadow:none}
 .btn.sea{background:linear-gradient(135deg,var(--sea),#34b6ba);box-shadow:0 8px 18px rgba(27,154,160,.3)}
 .btn.ghost{background:#fff;color:var(--sea-deep);border:1.5px solid var(--line);box-shadow:none}
@@ -278,8 +280,31 @@ td.c,th.c{text-align:center}
     </div>
     <div id="modeChip" class="mode-chip"><span class="dot off"></span>연결 확인 중…</div>
     <div class="card">
-      <h2>처음 오셨네요! 이름을 알려주세요</h2>
+      <h2>처음 오셨네요! 👋</h2>
       <small>이름은 한 번만 입력하면 돼요. 다음부터는 바로 시작해요.</small>
+      <label class="fld">참여 방식</label>
+      <div class="choices" id="modeChoices">
+        <div class="choice sel" data-mode="solo"><b>개인</b></div>
+        <div class="choice" data-mode="team"><b>팀</b></div>
+      </div>
+      <div id="teamPanel" class="hidden">
+        <div class="choices" id="teamModeChoices">
+          <div class="choice sel" data-tmode="create"><b>팀 만들기</b></div>
+          <div class="choice" data-tmode="join"><b>팀 가입</b></div>
+        </div>
+        <div id="teamCreate">
+          <label class="fld">팀 이름</label>
+          <input id="inTeamName" class="txt" placeholder="예: 남원 라이딩팀"/>
+          <small>팀을 만든 분이 리더(대표)가 돼요. 아래 ‘이름’이 리더로 등록됩니다.</small>
+        </div>
+        <div id="teamJoin" class="hidden">
+          <label class="fld">팀 이름 검색</label>
+          <div class="pinbox"><input id="inTeamSearch" class="txt" placeholder="팀 이름으로 검색"/>
+            <button id="btnTeamSearch" class="btn sea" style="width:auto;margin:0;padding:0 16px">검색</button></div>
+          <div id="teamResults"></div>
+          <div id="teamPicked" class="note hidden"></div>
+        </div>
+      </div>
       <label class="fld">이름</label>
       <input id="inName" class="txt" placeholder="이름을 적어요" autocomplete="off"/>
       <label class="fld">우리 모임</label>
@@ -352,10 +377,12 @@ td.c,th.c{text-align:center}
     <div class="card"><h2>함께 달린 거리</h2>
       <div class="teambar" id="teamBar"></div><small id="teamNote"></small></div>
     <div class="card sched"><details><summary>전체 훈련 일정 펼쳐보기 ▾</summary><ol id="schedList"></ol></details></div>
-    <button id="btnBoard" class="btn ghost">🏅 완주 인증 게시판</button>
-    <button id="btnCourses" class="btn ghost">🗺️ 추천 코스</button>
-    <button id="btnSettings" class="btn ghost">⚙️ 설정 — 코스 · 일정 · 레벨</button>
-    <button class="btn ghost" onclick="show('login')">🏠 처음 화면으로</button>
+    <div class="menu">
+      <button id="btnBoard" class="btn ghost">🏅 완주 게시판</button>
+      <button id="btnCourses" class="btn ghost">🗺️ 추천 코스</button>
+      <button id="btnSettings" class="btn ghost">⚙️ 설정</button>
+      <button class="btn ghost" onclick="show('login')">🏠 처음으로</button>
+    </div>
     <div class="foot">기록은 <span id="footMode">이 기기</span>에 저장돼요 · 제주 자전거 · jeju-bicycle</div>
   </section>
 
@@ -389,6 +416,12 @@ td.c,th.c{text-align:center}
       <small id="setPeriodInfo"></small>
     </div>
     <button id="btnSetSave" class="btn">저장하기</button>
+    <div class="card">
+      <h2>기록 관리</h2>
+      <button class="btn ghost" onclick="resetMyLogs()">🧹 내 기록만 초기화 (이름·설정 유지)</button>
+      <button class="btn ghost" onclick="resetMe()" style="color:#c0492f">🔄 내 것 전체 초기화 (처음 등록부터)</button>
+      <small>‘내 기록만’은 연습 기록만 지워요. ‘전체’는 프로필까지 지우고 등록 화면으로 갑니다.</small>
+    </div>
   </section>
 
   <!-- ===== ADMIN ===== -->
@@ -416,6 +449,12 @@ td.c,th.c{text-align:center}
       <div class="adminbtns">
         <button id="btnRefresh" class="btn sea" style="margin:0">새로고침</button>
         <button id="btnCsv" class="btn ghost" style="margin:0">CSV 내보내기</button>
+      </div>
+      <div class="card" style="margin-top:12px;border:1px solid #efc6bf">
+        <h2 style="color:#c0492f">⚠️ 데이터 초기화 (관리자 전용)</h2>
+        <button class="btn" onclick="adminResetLogs()" style="background:#ef8a3c;color:#fff">📉 전체 진행기록 초기화 (명단·게시판 유지)</button>
+        <button class="btn" onclick="adminResetAll()" style="background:#e0574c;color:#fff">🗑️ 전체 완전 초기화 (모두 삭제)</button>
+        <small>되돌릴 수 없어요. 새 시즌을 시작할 때만 사용하세요.</small>
       </div>
     </div>
   </section>
@@ -642,7 +681,7 @@ function liveCourseCfg(){ return {start:$("setStart").value.trim(), mid:$("setMi
 function updateMapSet(){ drawJejuMap("mapSet","mapSetNote", liveCourseCfg(), 0); }
 
 /* ===== 로그인(온보딩) ===== */
-var pick={grp:null,lvl:null};
+var pick={grp:null,lvl:null,mode:"solo",tmode:"create",teamId:null,teamName:null};
 function bindChoices(boxId,store,key,attr,after){
   var box=$(boxId);
   box.querySelectorAll(".choice").forEach(function(c){
@@ -652,7 +691,42 @@ function bindChoices(boxId,store,key,attr,after){
     });
   });
 }
-function refreshStart(){ $("btnStart").disabled = !($("inName").value.trim() && pick.grp && pick.lvl && $("inPledge").checked); }
+function refreshStart(){
+  var base = $("inName").value.trim() && pick.grp && pick.lvl && $("inPledge").checked;
+  var teamOk = true;
+  if(pick.mode==="team"){ teamOk = (pick.tmode==="create") ? !!$("inTeamName").value.trim() : !!pick.teamId; }
+  $("btnStart").disabled = !(base && teamOk);
+}
+function selMode(m){ pick.mode=m; $("teamPanel").classList.toggle("hidden", m!=="team"); refreshStart(); }
+function selModeUI(m){ $("modeChoices").querySelectorAll(".choice").forEach(function(x){ x.classList.toggle("sel", x.getAttribute("data-mode")===m); }); selMode(m); }
+function selTmode(t){ pick.tmode=t; $("teamCreate").classList.toggle("hidden", t!=="create"); $("teamJoin").classList.toggle("hidden", t!=="join"); refreshStart(); }
+function selTmodeUI(t){ $("teamModeChoices").querySelectorAll(".choice").forEach(function(x){ x.classList.toggle("sel", x.getAttribute("data-tmode")===t); }); selTmode(t); }
+function teamSearch(){
+  var q=$("inTeamSearch").value.trim(); if(!q) return;
+  if(MODE!=="cloud"){ $("teamResults").innerHTML='<div class="note">팀 검색은 인터넷(클라우드) 연결이 필요해요.</div>'; return; }
+  $("teamResults").innerHTML='<small>검색 중…</small>';
+  db.ref(DB_ROOT+"/teams").once("value").then(function(snap){
+    var v=snap.val()||{}, rows=[]; window.__teams=v;
+    Object.keys(v).forEach(function(id){ var t=v[id]; if(t&&t.name&&t.name.indexOf(q)>=0){ rows.push({id:id,name:t.name,leader:t.leader,n:t.members?Object.keys(t.members).length:0}); } });
+    if(!rows.length){ $("teamResults").innerHTML='<div class="note">검색 결과가 없어요. ‘팀 만들기’로 새로 만들 수 있어요.</div>'; return; }
+    $("teamResults").innerHTML=rows.map(function(r){ return '<button class="btn ghost" style="text-align:left;margin:6px 0 0" onclick="pickTeam(\''+r.id+'\')">🚩 '+esc(r.name)+' <small>· 리더 '+esc(r.leader||"")+' · '+r.n+'명</small></button>'; }).join("");
+  }).catch(function(){ $("teamResults").innerHTML='<div class="note">검색 중 오류가 발생했어요.</div>'; });
+}
+function pickTeam(id){
+  var t=(window.__teams||{})[id]; if(!t) return;
+  pick.teamId=id; pick.teamName=t.name;
+  $("teamPicked").classList.remove("hidden");
+  $("teamPicked").innerHTML="가입할 팀: <b>"+esc(t.name)+"</b> (리더 "+esc(t.leader||"")+")";
+  $("teamResults").innerHTML=""; refreshStart();
+}
+function checkInvite(){
+  try{ var tid=new URLSearchParams(location.search).get("team");
+    if(tid && MODE==="cloud"){ db.ref(DB_ROOT+"/teams/"+tid).once("value").then(function(snap){
+      var t=snap.val(); if(!t) return; window.__teams=window.__teams||{}; window.__teams[tid]=t;
+      selModeUI("team"); selTmodeUI("join"); pickTeam(tid);
+    }).catch(function(){}); }
+  }catch(e){}
+}
 function initLogin(){
   bindChoices("grpChoices",pick,"grp","data-grp",refreshStart);
   bindChoices("lvlChoices",pick,"lvl","data-lvl",refreshStart);
@@ -660,6 +734,11 @@ function initLogin(){
   $("inPledge").addEventListener("change",refreshStart);
   $("btnStart").addEventListener("click",startApp);
   $("btnToAdmin").addEventListener("click",openAdmin);
+  $("modeChoices").querySelectorAll(".choice").forEach(function(c){ c.addEventListener("click",function(){ selModeUI(c.getAttribute("data-mode")); }); });
+  $("teamModeChoices").querySelectorAll(".choice").forEach(function(c){ c.addEventListener("click",function(){ selTmodeUI(c.getAttribute("data-tmode")); }); });
+  $("btnTeamSearch").addEventListener("click",teamSearch);
+  $("inTeamName").addEventListener("input",refreshStart);
+  checkInvite();
   var sub=$("loginSub"); if(sub){ sub.textContent="매일 조금씩, 함께 "+(cfg.end||"목표 지점")+"까지! · 실전 "+fmtDate(cfg.planDate); }
   $("modeChip").innerHTML = (MODE==="cloud")
     ? '<span class="dot on"></span>클라우드 연결됨 — 관리자가 진행상황을 봐요'
@@ -668,15 +747,26 @@ function initLogin(){
 function startApp(){
   var uid = (profile&&profile.uid) || ("u_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
   profile = { uid:uid, name:$("inName").value.trim(), group:pick.grp, level:pick.lvl, ts:Date.now() };
+  if(pick.mode==="team"){
+    if(pick.tmode==="create"){
+      var tid="t_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+      profile.teamId=tid; profile.teamName=$("inTeamName").value.trim(); profile.role="leader";
+      if(MODE==="cloud"){ try{ var mm={}; mm[uid]={name:profile.name,ts:Date.now(),role:"leader"};
+        db.ref(DB_ROOT+"/teams/"+tid).set({name:profile.teamName,leader:profile.name,createdTs:Date.now(),members:mm}); }catch(e){} }
+    } else {
+      profile.teamId=pick.teamId; profile.teamName=pick.teamName; profile.role="member";
+      if(MODE==="cloud" && pick.teamId){ try{ db.ref(DB_ROOT+"/teams/"+pick.teamId+"/members/"+uid).set({name:profile.name,ts:Date.now(),role:"member"}); }catch(e){} }
+    }
+  }
   lsSet("bike_profile",profile);
-  if(MODE==="cloud"){ try{ db.ref(DB_ROOT+"/participants/"+uid).set({name:profile.name,group:profile.group,level:profile.level,ts:profile.ts}); }catch(e){} }
+  if(MODE==="cloud"){ try{ db.ref(DB_ROOT+"/participants/"+uid).set({name:profile.name,group:profile.group,level:profile.level,teamId:profile.teamId||null,teamName:profile.teamName||null,ts:profile.ts}); }catch(e){} }
   enterMain();
 }
 
 /* ===== 메인 ===== */
 function enterMain(){
   show("main");
-  $("footMode").textContent=(MODE==="cloud")?"클라우드":"이 기기";
+  $("footMode").textContent=(MODE==="cloud")?"클라우드":"이 기기"; if(profile&&profile.teamName){ $("footMode").textContent+=" · 팀 "+profile.teamName; }
   if(MODE==="cloud"){
     db.ref(DB_ROOT+"/config").once("value").then(function(s){ var v=s.val(); if(v){ cfg=Object.assign({},DEFAULT_CFG,v); lsSet("bike_config",cfg); } })
       .catch(function(){})
@@ -833,6 +923,32 @@ function tryPin(){
   }).catch(function(err){
     $("pinErr").textContent="이메일 또는 비밀번호가 맞지 않아요."; $("pinErr").classList.remove("hidden");
   }).then(function(){ $("btnPin").disabled=false; $("btnPin").textContent=_t; });
+}
+function resetMyLogs(){
+  if(!confirm("내 연습 기록을 모두 지울까요?\n(이름·설정은 그대로 유지돼요)")) return;
+  logs={}; lsSet("bike_logs",{});
+  var done=function(){ location.reload(); };
+  if(MODE==="cloud" && profile && profile.uid){ try{ db.ref(DB_ROOT+"/logs/"+profile.uid).remove().then(done).catch(done); }catch(e){ done(); } } else done();
+}
+function resetMe(){
+  if(!confirm("내 프로필과 기록을 모두 지우고\n처음 등록부터 다시 시작할까요?")) return;
+  var uid = profile && profile.uid;
+  localStorage.removeItem("bike_profile"); localStorage.removeItem("bike_logs");
+  var done=function(){ location.reload(); };
+  if(MODE==="cloud" && uid){ try{ Promise.all([db.ref(DB_ROOT+"/logs/"+uid).remove(), db.ref(DB_ROOT+"/participants/"+uid).remove()]).then(done).catch(done); }catch(e){ done(); } } else done();
+}
+function adminResetLogs(){
+  if(!adminUnlocked || MODE!=="cloud") return;
+  if(!confirm("모든 참가자의 ‘진행 기록’을 초기화할까요?\n참가자 명단·게시판·추천코스는 유지됩니다.")) return;
+  if(!confirm("정말 진행할까요? 되돌릴 수 없습니다.")) return;
+  db.ref(DB_ROOT+"/logs").remove().then(function(){ alert("진행 기록을 초기화했어요."); loadAdmin(); }).catch(function(){ alert("초기화 중 오류가 발생했어요."); });
+}
+function adminResetAll(){
+  if(!adminUnlocked || MODE!=="cloud") return;
+  if(!confirm("⚠️ 전체 데이터(참가자·기록·게시판·추천코스)를\n모두 삭제할까요? 되돌릴 수 없습니다.")) return;
+  var t=prompt("확인을 위해  초기화  라고 입력하세요.");
+  if(t!=="초기화"){ alert("취소되었습니다."); return; }
+  db.ref(DB_ROOT).remove().then(function(){ alert("전체 데이터를 초기화했어요."); loadAdmin(); }).catch(function(){ alert("초기화 중 오류가 발생했어요."); });
 }
 function loadAdmin(){
   if(MODE!=="cloud"){
