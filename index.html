@@ -452,7 +452,7 @@ td.c,th.c{text-align:center}
 
 <script>
 /* ===== 설정값 ===== */
-var ADMIN_PIN = "1010";        // 선생님 PIN (원하는 숫자로 변경)
+var ADMIN_PIN = "1360";        // 선생님 PIN (원하는 숫자로 변경)
 var DB_ROOT  = "bike2026";
 // 기본 코스·일정 — 앱의 '설정'에서 언제든 변경 가능
 var DEFAULT_CFG = { start:"남원", mid:"표선", end:"성산일출봉", startDate:"2026-09-05", planDate:"2026-10-10" };
@@ -533,12 +533,16 @@ var SCHEDULES = {
 /* ===== Firebase / 모드 ===== */
 var db=null, MODE="local";
 var firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT",
-  appId: "YOUR_APP_ID"
+  const firebaseConfig = {
+  apiKey: "AIzaSyDL6tysXskXH04MD_GTYB_jly9T9LCX81k",
+  authDomain: "jeju-bicycle.firebaseapp.com",
+  databaseURL: "https://jeju-bicycle-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "jeju-bicycle",
+  storageBucket: "jeju-bicycle.firebasestorage.app",
+  messagingSenderId: "123440310582",
+  appId: "1:123440310582:web:39b5f1938c1d3e718e6b97"
 };
+
 var FB_READY = (typeof firebase!=="undefined") && firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf("YOUR_")!==0;
 if(FB_READY){ try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); MODE="cloud"; }catch(e){ console.warn(e); MODE="local"; } }
 
