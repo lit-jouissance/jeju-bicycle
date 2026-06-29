@@ -296,6 +296,15 @@ td.c,th.c{text-align:center}
           <label class="fld">팀 이름</label>
           <input id="inTeamName" class="txt" placeholder="예: 남원 라이딩팀"/>
           <small>팀을 만든 분이 리더(대표)가 돼요. 아래 ‘이름’이 리더로 등록됩니다.</small>
+          <label class="fld">우리 모임 (팀 분류)</label>
+          <div class="choices" id="teamGrpChoices">
+            <div class="choice" data-grp="elem"><b>초등</b></div>
+            <div class="choice" data-grp="mid"><b>중·고등</b></div>
+            <div class="choice" data-grp="adult"><b>성인</b></div>
+            <div class="choice" data-grp="couple"><b>연인</b></div>
+            <div class="choice" data-grp="family"><b>가족</b></div>
+            <div class="choice" data-grp="club"><b>동호인</b></div>
+          </div>
         </div>
         <div id="teamJoin" class="hidden">
           <label class="fld">팀 이름 검색</label>
@@ -307,6 +316,7 @@ td.c,th.c{text-align:center}
       </div>
       <label class="fld">이름</label>
       <input id="inName" class="txt" placeholder="이름을 적어요" autocomplete="off"/>
+      <div id="soloGrpWrap">
       <label class="fld">우리 모임</label>
       <div class="choices" id="grpChoices">
         <div class="choice" data-grp="elem"><b>초등</b></div>
@@ -315,7 +325,7 @@ td.c,th.c{text-align:center}
         <div class="choice" data-grp="couple"><b>연인</b></div>
         <div class="choice" data-grp="family"><b>가족</b></div>
         <div class="choice" data-grp="club"><b>동호인</b></div>
-      </div>
+      </div></div>
       <label class="fld">내 자전거 실력</label>
       <div class="choices" id="lvlChoices">
         <div class="choice" data-lvl="lv1"><b>입문자</b><small>아직 못 타거나<br>막 배워요</small></div>
@@ -414,6 +424,32 @@ td.c,th.c{text-align:center}
       <label class="fld">연습 시작일</label><input id="setStartDate" class="txt" type="date"/>
       <label class="fld">실전(도전) 날짜</label><input id="setPlanDate" class="txt" type="date"/>
       <small id="setPeriodInfo"></small>
+    </div>
+    <div class="card hidden" id="teamMgmtCard">
+      <h2>팀 관리 <small>(리더 전용)</small></h2>
+      <div id="teamGate">
+        <small>관리 비밀번호를 입력하세요. (초기 0000)</small>
+        <div class="pinbox" style="margin-top:8px"><input id="inTeamPw" type="password" placeholder="비밀번호" autocomplete="off"/>
+          <button id="btnTeamPw" class="btn sea" style="width:auto;margin:0;padding:0 18px">확인</button></div>
+        <div id="teamPwErr" class="note hidden">비밀번호가 맞지 않아요.</div>
+      </div>
+      <div id="teamMgmtBody" class="hidden">
+        <div class="namechip"><b id="teamMgmtName">팀</b><span style="color:var(--muted)">리더 <span id="teamMgmtLeader"></span></span></div>
+        <label class="fld">초대 링크</label>
+        <div class="pinbox"><input id="inviteLink" class="txt" readonly/>
+          <button id="btnCopyInvite" class="btn sea" style="width:auto;margin:0;padding:0 16px">복사</button></div>
+        <small id="inviteMsg" style="display:block"></small>
+        <label class="fld">구성원</label>
+        <div id="memberList"></div>
+        <div class="pinbox" style="margin-top:8px"><input id="inAddMember" class="txt" placeholder="이름으로 구성원 추가"/>
+          <button id="btnAddMember" class="btn sea" style="width:auto;margin:0;padding:0 16px">추가</button></div>
+        <small>※ 정식 기록은 그 분이 초대 링크로 직접 들어와야 남아요(수동 추가는 명단용).</small>
+        <label class="fld">관리 비밀번호</label>
+        <div class="pinbox"><input id="inSetPw" class="txt" placeholder="새 비밀번호 (4자 이상)"/>
+          <button id="btnSetPw" class="btn ghost" style="width:auto;margin:0;padding:0 16px">변경</button></div>
+        <label class="pledge" style="margin-top:8px"><input type="checkbox" id="pwDisable"/>
+          <span>비밀번호 사용 안 함 (관리 화면을 바로 열기)</span></label>
+      </div>
     </div>
     <button id="btnSetSave" class="btn">저장하기</button>
     <div class="card">
@@ -681,7 +717,7 @@ function liveCourseCfg(){ return {start:$("setStart").value.trim(), mid:$("setMi
 function updateMapSet(){ drawJejuMap("mapSet","mapSetNote", liveCourseCfg(), 0); }
 
 /* ===== 로그인(온보딩) ===== */
-var pick={grp:null,lvl:null,mode:"solo",tmode:"create",teamId:null,teamName:null};
+var pick={grp:null,lvl:null,mode:"solo",tmode:"create",teamId:null,teamName:null,teamGrp:null};
 function bindChoices(boxId,store,key,attr,after){
   var box=$(boxId);
   box.querySelectorAll(".choice").forEach(function(c){
@@ -697,9 +733,20 @@ function refreshStart(){
   if(pick.mode==="team"){ teamOk = (pick.tmode==="create") ? !!$("inTeamName").value.trim() : !!pick.teamId; }
   $("btnStart").disabled = !(base && teamOk);
 }
-function selMode(m){ pick.mode=m; $("teamPanel").classList.toggle("hidden", m!=="team"); refreshStart(); }
+function activeGrp(){
+  if(pick.mode==="solo"){ var c=$("grpChoices").querySelector(".choice.sel"); return c?c.getAttribute("data-grp"):null; }
+  if(pick.tmode==="create"){ var c2=$("teamGrpChoices").querySelector(".choice.sel"); return c2?c2.getAttribute("data-grp"):null; }
+  if(pick.teamGrp) return pick.teamGrp;
+  var c3=$("grpChoices").querySelector(".choice.sel"); return c3?c3.getAttribute("data-grp"):null;
+}
+function syncGroup(){ pick.grp=activeGrp(); }
+function updateGrpVisibility(){
+  var soloShow=(pick.mode==="solo")||(pick.mode==="team"&&pick.tmode==="join"&&!pick.teamGrp);
+  $("soloGrpWrap").classList.toggle("hidden", !soloShow);
+}
+function selMode(m){ pick.mode=m; $("teamPanel").classList.toggle("hidden", m!=="team"); updateGrpVisibility(); syncGroup(); refreshStart(); }
 function selModeUI(m){ $("modeChoices").querySelectorAll(".choice").forEach(function(x){ x.classList.toggle("sel", x.getAttribute("data-mode")===m); }); selMode(m); }
-function selTmode(t){ pick.tmode=t; $("teamCreate").classList.toggle("hidden", t!=="create"); $("teamJoin").classList.toggle("hidden", t!=="join"); refreshStart(); }
+function selTmode(t){ pick.tmode=t; $("teamCreate").classList.toggle("hidden", t!=="create"); $("teamJoin").classList.toggle("hidden", t!=="join"); updateGrpVisibility(); syncGroup(); refreshStart(); }
 function selTmodeUI(t){ $("teamModeChoices").querySelectorAll(".choice").forEach(function(x){ x.classList.toggle("sel", x.getAttribute("data-tmode")===t); }); selTmode(t); }
 function teamSearch(){
   var q=$("inTeamSearch").value.trim(); if(!q) return;
@@ -714,10 +761,10 @@ function teamSearch(){
 }
 function pickTeam(id){
   var t=(window.__teams||{})[id]; if(!t) return;
-  pick.teamId=id; pick.teamName=t.name;
+  pick.teamId=id; pick.teamName=t.name; pick.teamGrp=t.group||null;
   $("teamPicked").classList.remove("hidden");
-  $("teamPicked").innerHTML="가입할 팀: <b>"+esc(t.name)+"</b> (리더 "+esc(t.leader||"")+")";
-  $("teamResults").innerHTML=""; refreshStart();
+  $("teamPicked").innerHTML="가입할 팀: <b>"+esc(t.name)+"</b> (리더 "+esc(t.leader||"")+(t.group?(" · 모임 "+esc(GROUPS[t.group]||t.group)):"")+")";
+  $("teamResults").innerHTML=""; updateGrpVisibility(); syncGroup(); refreshStart();
 }
 function checkInvite(){
   try{ var tid=new URLSearchParams(location.search).get("team");
@@ -738,6 +785,8 @@ function initLogin(){
   $("teamModeChoices").querySelectorAll(".choice").forEach(function(c){ c.addEventListener("click",function(){ selTmodeUI(c.getAttribute("data-tmode")); }); });
   $("btnTeamSearch").addEventListener("click",teamSearch);
   $("inTeamName").addEventListener("input",refreshStart);
+  bindChoices("teamGrpChoices",pick,"grp","data-grp",function(){ syncGroup(); refreshStart(); });
+  updateGrpVisibility();
   checkInvite();
   var sub=$("loginSub"); if(sub){ sub.textContent="매일 조금씩, 함께 "+(cfg.end||"목표 지점")+"까지! · 실전 "+fmtDate(cfg.planDate); }
   $("modeChip").innerHTML = (MODE==="cloud")
@@ -752,7 +801,7 @@ function startApp(){
       var tid="t_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
       profile.teamId=tid; profile.teamName=$("inTeamName").value.trim(); profile.role="leader";
       if(MODE==="cloud"){ try{ var mm={}; mm[uid]={name:profile.name,ts:Date.now(),role:"leader"};
-        db.ref(DB_ROOT+"/teams/"+tid).set({name:profile.teamName,leader:profile.name,createdTs:Date.now(),members:mm}); }catch(e){} }
+        db.ref(DB_ROOT+"/teams/"+tid).set({name:profile.teamName,leader:profile.name,group:profile.group,createdTs:Date.now(),mgmtPw:"0000",mgmtPwOn:true,members:mm}); }catch(e){} }
     } else {
       profile.teamId=pick.teamId; profile.teamName=pick.teamName; profile.role="member";
       if(MODE==="cloud" && pick.teamId){ try{ db.ref(DB_ROOT+"/teams/"+pick.teamId+"/members/"+uid).set({name:profile.name,ts:Date.now(),role:"member"}); }catch(e){} }
@@ -879,6 +928,7 @@ function openSettings(){
   $("setStartDate").value=cfg.startDate||""; $("setPlanDate").value=cfg.planDate||"";
   $("courseShareNote").textContent = (MODE==="cloud")?"코스·일정은 함께 타는 모두에게 적용돼요(클라우드).":"오프라인 — 코스·일정은 이 기기에만 적용돼요.";
   updatePeriodInfo(); updateMapSet();
+  setupTeamMgmt();
 }
 function updatePeriodInfo(){
   var g=pickSet.grp||profile.group, l=pickSet.lvl||profile.level;
@@ -949,6 +999,74 @@ function adminResetAll(){
   var t=prompt("확인을 위해  초기화  라고 입력하세요.");
   if(t!=="초기화"){ alert("취소되었습니다."); return; }
   db.ref(DB_ROOT).remove().then(function(){ alert("전체 데이터를 초기화했어요."); loadAdmin(); }).catch(function(){ alert("초기화 중 오류가 발생했어요."); });
+}
+var teamData=null;
+function setupTeamMgmt(){
+  var card=$("teamMgmtCard");
+  if(!(profile && profile.role==="leader" && profile.teamId)){ card.classList.add("hidden"); return; }
+  card.classList.remove("hidden");
+  $("teamMgmtBody").classList.add("hidden"); $("teamGate").classList.remove("hidden");
+  $("inTeamPw").value=""; $("teamPwErr").classList.add("hidden");
+  if(MODE!=="cloud"){ $("teamGate").innerHTML='<div class="note">팀 관리는 인터넷(클라우드) 연결이 필요해요.</div>'; return; }
+  db.ref(DB_ROOT+"/teams/"+profile.teamId).once("value").then(function(s){
+    teamData=s.val()||{};
+    if(teamData.mgmtPwOn===false){ openTeamMgmt(); }
+  }).catch(function(){});
+}
+function teamPwSubmit(){
+  var pw=(teamData&&teamData.mgmtPw!=null)?String(teamData.mgmtPw):"0000";
+  if($("inTeamPw").value===pw){ openTeamMgmt(); } else { $("teamPwErr").classList.remove("hidden"); }
+}
+function openTeamMgmt(){
+  $("teamGate").classList.add("hidden"); $("teamMgmtBody").classList.remove("hidden");
+  $("teamMgmtName").textContent=(teamData&&teamData.name)||profile.teamName||"우리 팀";
+  $("teamMgmtLeader").textContent=(teamData&&teamData.leader)||profile.name||"";
+  $("inviteLink").value=location.origin+location.pathname+"?team="+profile.teamId;
+  $("pwDisable").checked=(teamData&&teamData.mgmtPwOn===false);
+  $("inviteMsg").textContent="";
+  renderMembers();
+}
+function renderMembers(){
+  var m=(teamData&&teamData.members)||{}, ids=Object.keys(m);
+  if(!ids.length){ $("memberList").innerHTML='<small style="color:var(--muted)">아직 구성원이 없어요.</small>'; return; }
+  $("memberList").innerHTML=ids.map(function(uid){ var x=m[uid]||{}, isL=(x.role==="leader");
+    return '<div class="mrow" style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(0,0,0,.06)">'
+      +'<b>'+esc(x.name||"이름")+'</b>'+(isL?' <span class="badge lv">리더</span>':'')+(x.manual?' <small style="color:var(--muted)">(명단)</small>':'')
+      +(isL?'':'<button class="linkbtn rm" data-uid="'+uid+'" style="margin-left:auto;color:#c0492f;padding:4px 8px">제거</button>')+'</div>';
+  }).join("");
+  $("memberList").querySelectorAll("button.rm").forEach(function(b){ b.addEventListener("click",function(){ removeMember(b.getAttribute("data-uid")); }); });
+}
+function removeMember(uid){
+  if(!teamData||!teamData.members||!teamData.members[uid]) return;
+  var nm=teamData.members[uid].name||"이 구성원";
+  if(!confirm(nm+" 님을 팀에서 제거할까요?\n(그 분의 프로필·기록은 그대로 남고, 팀 명단에서만 빠져요)")) return;
+  db.ref(DB_ROOT+"/teams/"+profile.teamId+"/members/"+uid).remove().then(function(){
+    try{ db.ref(DB_ROOT+"/participants/"+uid+"/teamId").set(null); }catch(e){}
+    delete teamData.members[uid]; renderMembers();
+  }).catch(function(){ alert("제거 중 오류가 발생했어요."); });
+}
+function addMember(){
+  var nm=$("inAddMember").value.trim(); if(!nm) return;
+  var nid="m_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  db.ref(DB_ROOT+"/teams/"+profile.teamId+"/members/"+nid).set({name:nm,ts:Date.now(),role:"member",manual:true}).then(function(){
+    teamData.members=teamData.members||{}; teamData.members[nid]={name:nm,role:"member",manual:true};
+    $("inAddMember").value=""; renderMembers();
+  }).catch(function(){ alert("추가 중 오류가 발생했어요."); });
+}
+function copyInvite(){
+  var link=$("inviteLink").value, ok=function(){ $("inviteMsg").textContent="초대 링크를 복사했어요! 팀원에게 보내세요."; };
+  try{ navigator.clipboard.writeText(link).then(ok).catch(function(){ try{$("inviteLink").select();document.execCommand("copy");ok();}catch(e){ $("inviteMsg").textContent="길게 눌러 복사하세요."; } }); }
+  catch(e){ try{$("inviteLink").select();document.execCommand("copy");ok();}catch(e2){ $("inviteMsg").textContent="길게 눌러 복사하세요."; } }
+}
+function setTeamPw(){
+  var v=$("inSetPw").value.trim(); if(v.length<4){ alert("비밀번호는 4자 이상으로 정해주세요."); return; }
+  db.ref(DB_ROOT+"/teams/"+profile.teamId).update({mgmtPw:v,mgmtPwOn:true}).then(function(){
+    teamData.mgmtPw=v; teamData.mgmtPwOn=true; $("pwDisable").checked=false; $("inSetPw").value=""; alert("관리 비밀번호를 변경했어요.");
+  }).catch(function(){ alert("변경 중 오류가 발생했어요."); });
+}
+function toggleTeamPw(){
+  var off=$("pwDisable").checked;
+  db.ref(DB_ROOT+"/teams/"+profile.teamId).update({mgmtPwOn:!off}).then(function(){ teamData.mgmtPwOn=!off; }).catch(function(){});
 }
 function loadAdmin(){
   if(MODE!=="cloud"){
@@ -1061,6 +1179,11 @@ function initEvents(){
   $("btnSetBack").addEventListener("click",enterMain);
   $("btnSetSave").addEventListener("click",saveSettings);
   $("btnRename").addEventListener("click",renameUser);
+  $("btnTeamPw").addEventListener("click",teamPwSubmit);
+  $("btnCopyInvite").addEventListener("click",copyInvite);
+  $("btnAddMember").addEventListener("click",addMember);
+  $("btnSetPw").addEventListener("click",setTeamPw);
+  $("pwDisable").addEventListener("change",toggleTeamPw);
   bindChoices("setGrpChoices",pickSet,"grp","data-grp",updatePeriodInfo);
   bindChoices("setLvlChoices",pickSet,"lvl","data-lvl",updatePeriodInfo);
   ["setStart","setMid","setEnd"].forEach(function(id){ $(id).addEventListener("input",updateMapSet); });
