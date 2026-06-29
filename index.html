@@ -3,15 +3,22 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title font-color=#000000><b>제주 자전거 도전</b></title>
+<title>제주 자전거 도전</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#1b9aa0">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="제주자전거">
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <style>
 :root{
-  --basalt:#22303a; --ink:#28363f; --muted:#6c7c84;
+  --basalt:#16212a; --ink:#1b2730; --muted:#5a6a72;
   --sea:#1b9aa0; --sea-deep:#0c6f76; --wave:#d7f0ee;
   --sand:#f6efde; --card:#fffaef; --line:#ece0c4;
   --sunrise:#f4794e; --amber:#ffc24b; --good:#3f9d6b;
@@ -274,23 +281,28 @@ td.c,th.c{text-align:center}
       <small>이름은 한 번만 입력하면 돼요. 다음부터는 바로 시작해요.</small>
       <label class="fld">이름</label>
       <input id="inName" class="txt" placeholder="이름을 적어요" autocomplete="off"/>
-      <label class="fld">우리 부</label>
+      <label class="fld">우리 모임</label>
       <div class="choices" id="grpChoices">
-        <div class="choice" data-grp="elem"><b>초등부</b><small>초등학생</small></div>
-        <div class="choice" data-grp="mid"><b>중고등부</b><small>중·고등학생</small></div>
+        <div class="choice" data-grp="elem"><b>초등</b></div>
+        <div class="choice" data-grp="mid"><b>중·고등</b></div>
+        <div class="choice" data-grp="adult"><b>성인</b></div>
+        <div class="choice" data-grp="couple"><b>연인</b></div>
+        <div class="choice" data-grp="family"><b>가족</b></div>
+        <div class="choice" data-grp="club"><b>동호인</b></div>
       </div>
       <label class="fld">내 자전거 실력</label>
       <div class="choices" id="lvlChoices">
-        <div class="choice" data-lvl="beginner"><b>초심자</b><small>아직 못 타거나<br>막 배워요</small></div>
-        <div class="choice" data-lvl="inter"><b>중급</b><small>탈 줄 알지만<br>오래 타면 힘들어요</small></div>
-        <div class="choice" data-lvl="advanced"><b>숙련자</b><small>잘 타고<br>멀리도 가요</small></div>
+        <div class="choice" data-lvl="lv1"><b>입문자</b><small>아직 못 타거나<br>막 배워요</small></div>
+        <div class="choice" data-lvl="lv2"><b>초중급자</b><small>조금<br>탈 줄 알아요</small></div>
+        <div class="choice" data-lvl="lv3"><b>중급자</b><small>타지만 오래 타면<br>힘들어요</small></div>
+        <div class="choice" data-lvl="lv4"><b>상급자</b><small>잘 타고<br>멀리도 가요</small></div>
       </div>
       <div class="pledge"><input type="checkbox" id="inPledge"/>
-        <span><b>안전 약속</b> — 헬멧 꼭 쓰기 · 한 줄로 타기 · 선두·후미 선생님 따르기. 약속해요!</span></div>
+        <span><b>안전 약속</b> — 헬멧 꼭 쓰기 · 한 줄로 타기 · 선두·후미 따르기. 약속해요!</span></div>
       <button id="btnStart" class="btn" disabled>시작하기 🚴</button>
-      <button id="btnToAdmin" class="linkbtn">선생님(관리자)으로 보기</button>
+      <button id="btnToAdmin" class="linkbtn">관리자로 보기</button>
     </div>
-    <div class="foot" font-color=#000000><b>제주자전거·JeJu-bicycle</b></div>
+    <div class="foot">제주 자전거 · jeju-bicycle</div>
   </section>
 
   <!-- ===== MAIN ===== -->
@@ -337,13 +349,12 @@ td.c,th.c{text-align:center}
     </div>
     <div class="card"><h2>나의 배지</h2><div class="badges" id="badgeRow"></div></div>
     <div class="card"><h2>함께 달린 거리</h2>
-      <div class="teambar" id="teamBar">
-        <div class="row"><span class="name">초등부</span><div class="track"><div class="bar e" id="barE" style="width:0%"></div></div><span class="km" id="kmE">0km</span></div>
-        <div class="row"><span class="name">중고등부</span><div class="track"><div class="bar m" id="barM" style="width:0%"></div></div><span class="km" id="kmM">0km</span></div>
-      </div><small id="teamNote"></small></div>
+      <div class="teambar" id="teamBar"></div><small id="teamNote"></small></div>
     <div class="card sched"><details><summary>전체 훈련 일정 펼쳐보기 ▾</summary><ol id="schedList"></ol></details></div>
+    <button id="btnBoard" class="btn ghost">🏅 완주 인증 게시판</button>
+    <button id="btnCourses" class="btn ghost">🗺️ 추천 코스</button>
     <button id="btnSettings" class="btn ghost">⚙️ 설정 — 코스 · 일정 · 레벨</button>
-    <div class="foot">기록은 <span id="footMode">이 기기</span>에 저장돼요 · 제주 자전거· JeJu-bicycle</div>
+    <div class="foot">기록은 <span id="footMode">이 기기</span>에 저장돼요 · 제주 자전거 · jeju-bicycle</div>
   </section>
 
   <!-- ===== SETTINGS (이름은 다시 묻지 않음) ===== -->
@@ -353,12 +364,12 @@ td.c,th.c{text-align:center}
     <div class="card">
       <h2>내 정보</h2>
       <div class="namechip"><b id="setName">이름</b><button id="btnRename" class="linkbtn" style="margin:0;padding:4px 8px">이름 수정</button></div>
-      <label class="fld">우리 부</label>
+      <label class="fld">우리 모임</label>
       <div class="choices" id="setGrpChoices">
-        <div class="choice" data-grp="elem"><b>초등부</b></div><div class="choice" data-grp="mid"><b>중고등부</b></div></div>
+        <div class="choice" data-grp="elem"><b>초등</b></div><div class="choice" data-grp="mid"><b>중·고등</b></div><div class="choice" data-grp="adult"><b>성인</b></div><div class="choice" data-grp="couple"><b>연인</b></div><div class="choice" data-grp="family"><b>가족</b></div><div class="choice" data-grp="club"><b>동호인</b></div></div>
       <label class="fld">내 자전거 실력</label>
       <div class="choices" id="setLvlChoices">
-        <div class="choice" data-lvl="beginner"><b>초심자</b></div><div class="choice" data-lvl="inter"><b>중급</b></div><div class="choice" data-lvl="advanced"><b>숙련자</b></div></div>
+        <div class="choice" data-lvl="lv1"><b>입문자</b></div><div class="choice" data-lvl="lv2"><b>초중급자</b></div><div class="choice" data-lvl="lv3"><b>중급자</b></div><div class="choice" data-lvl="lv4"><b>상급자</b></div></div>
     </div>
     <div class="card">
       <h2>코스 (제주 어디든)</h2>
@@ -380,10 +391,10 @@ td.c,th.c{text-align:center}
 
   <!-- ===== ADMIN ===== -->
   <section id="screen-admin" class="hidden">
-    <div class="adminhead"><h2>👀 선생님 대시보드</h2>
+    <div class="adminhead"><h2>👀 관리자 대시보드</h2>
       <button id="btnAdminBack" class="btn ghost" style="width:auto;padding:9px 14px;margin:0;font-size:14px">← 돌아가기</button></div>
     <div id="pinGate" class="card">
-      <h2>관리자 확인</h2><small>아이들 진행상황을 보려면 PIN을 입력하세요.</small>
+      <h2>관리자 확인</h2><small>참가자 진행상황을 보려면 PIN을 입력하세요.</small>
       <div class="pinbox"><input id="inPin" type="password" inputmode="numeric" maxlength="6" placeholder="••••"/>
         <button id="btnPin" class="btn sea" style="width:auto;margin:0;padding:0 20px">확인</button></div>
       <div id="pinErr" class="note hidden">PIN이 맞지 않아요.</div>
@@ -392,8 +403,8 @@ td.c,th.c{text-align:center}
       <div class="sumgrid">
         <div class="sumcard"><div class="v" id="aTotal">0</div><small>참가 인원</small></div>
         <div class="sumcard"><div class="v" id="aToday">0</div><small>오늘 연습</small></div>
-        <div class="sumcard"><div class="v" id="aElem">0</div><small>초등부</small></div>
-        <div class="sumcard"><div class="v" id="aMid">0</div><small>중고등부</small></div>
+        <div class="sumcard"><div class="v" id="aKm">0</div><small>전체 누적 km</small></div>
+        <div class="sumcard"><div class="v" id="aAvg">0%</div><small>평균 진행률</small></div>
       </div>
       <div id="adminNote" class="note hidden"></div>
       <div class="tablewrap"><table id="aTable"><thead><tr>
@@ -406,22 +417,54 @@ td.c,th.c{text-align:center}
     </div>
   </section>
 
+  <!-- ===== 완주 인증 게시판 ===== -->
+  <section id="screen-board" class="hidden">
+    <div class="adminhead"><h2>🏅 완주 인증 게시판</h2>
+      <button id="btnBoardBack" class="btn ghost" style="width:auto;padding:9px 14px;margin:0;font-size:14px">← 돌아가기</button></div>
+    <div class="card">
+      <h2>완주 소감 남기기</h2>
+      <textarea id="bdText" class="txt" maxlength="200" placeholder="완주 소감을 200자 이내로 적어요"></textarea>
+      <small id="bdCount" style="display:block;text-align:right;margin-top:4px">0 / 200</small>
+      <small id="bdPhotoNote" class="note" style="display:block">📷 사진 첨부(최대 3장)는 저장 방식 결정 후 추가할게요. 우선 소감만 남길 수 있어요.</small>
+      <button id="bdPost" class="btn">소감 등록 🎉</button>
+    </div>
+    <div id="bdList"></div>
+  </section>
+
+  <!-- ===== 추천 코스 ===== -->
+  <section id="screen-courses" class="hidden">
+    <div class="adminhead"><h2>🗺️ 추천 코스</h2>
+      <button id="btnCoursesBack" class="btn ghost" style="width:auto;padding:9px 14px;margin:0;font-size:14px">← 돌아가기</button></div>
+    <div class="card">
+      <h2>코스 추천하기</h2>
+      <label class="fld">지역 (시·도)</label>
+      <select id="csRegion" class="txt"></select>
+      <label class="fld">코스 한 줄 소개</label>
+      <input id="csText" class="txt" maxlength="80" placeholder="예: 함덕~김녕 해안, 바다뷰 최고! (80자 이내)"/>
+      <button id="csPost" class="btn sea">추천 등록</button>
+    </div>
+    <div class="card"><label class="fld" style="margin-top:0">지역으로 보기</label>
+      <select id="csFilter" class="txt"></select></div>
+    <div id="csList"></div>
+  </section>
+
 </div>
 
 <script>
 /* ===== 설정값 ===== */
-var ADMIN_PIN = "1360";        // 선생님 PIN (원하는 숫자로 변경)
+var ADMIN_PIN = "1010";        // 선생님 PIN (원하는 숫자로 변경)
 var DB_ROOT  = "bike2026";
 // 기본 코스·일정 — 앱의 '설정'에서 언제든 변경 가능
 var DEFAULT_CFG = { start:"남원", mid:"표선", end:"성산일출봉", startDate:"2026-09-05", planDate:"2026-10-10" };
 
-var GROUPS = {elem:"초등부", mid:"중고등부"};
-var LEVELS = {beginner:"초심자", inter:"중급", advanced:"숙련자"};
+var GROUPS = {elem:"초등", mid:"중·고등", adult:"성인", couple:"연인", family:"가족", club:"동호인"};
+var LEVELS = {lv1:"입문자", lv2:"초중급자", lv3:"중급자", lv4:"상급자"};
+function planFamily(g){ return g==="elem" ? "elem" : "mid"; }
 function R(t){return {t:t,km:0,rest:true};}
 function S(t){return {t:t,km:0};}
 function D(t,km){return {t:t,km:km};}
 var SCHEDULES = {
-  elem_beginner: [
+  elem_lv1: [
     S("자전거랑 친해지기 — 안장에 앉아 두 발로 걷기 10분"),S("발 구르기 활주 — 페달 떼고 균형 잡기 15분"),
     S("브레이크 꽉! 멈추기 연습 + 활주"),S("두 발 페달로 5m 가기 도전"),S("페달로 20m 연속 주행"),
     S("출발·정지 10번 + 직선 50m"),S("직선 100m + 부드럽게 멈추기"),S("8자 코스 돌기 · 방향 전환"),
@@ -429,9 +472,16 @@ var SCHEDULES = {
     R("휴식일 — 스트레칭 & 자전거 점검"),D("3km 해안 자전거길",3),D("4km + 물·간식 보급 연습",4),
     R("휴식일 — 푹 쉬기"),D("5km 주행",5),D("7km + 그룹 규칙(간격·수신호)",7),R("휴식일"),
     D("9km 주행",9),D("11km 모의 주행",11),R("휴식일"),D("13km 1구간 완주 도전",13),
-    D("가벼운 점검 라이딩 3km + 장비 점검",3),R("휴식 — 컨디션 조절 🎉 실전 준비 끝!")
+    D("가벼운 점검 라이딩 3km + 장비 점검",3),R("휴식 — 컨디션 조절 🎉 준비 끝!")
   ],
-  elem_inter: [
+  elem_lv2: [
+    S("출발·정지·브레이크 다시 익히기 + 200m"),S("8자·방향전환 + 500m"),
+    D("1km 또박또박 주행",1),D("2km 한 줄 주행·수신호",2),R("휴식일 — 점검"),
+    D("3km 해안길",3),D("4km 주행",4),R("휴식일"),D("5km 주행",5),D("6km + 보급 연습",6),
+    R("휴식일"),D("7km 주행",7),D("9km 주행",9),R("휴식일"),D("10km 주행",10),D("11km 주행",11),
+    R("휴식일"),D("13km 1구간 완주 도전",13),D("가벼운 4km + 장비 점검",4),R("휴식 — 준비 끝 🎉")
+  ],
+  elem_lv3: [
     D("출발·정지·브레이크 점검 + 2km",2),D("8자·수신호·한 줄 주행 3km",3),D("4km 해안길",4),
     R("휴식일 — 스트레칭 & 점검"),D("5km 주행",5),D("6km + 보급 연습",6),R("휴식일"),
     D("7km 그룹 라이딩",7),D("9km 주행",9),R("휴식일"),D("10km 주행",10),D("12km 주행",12),
@@ -439,7 +489,7 @@ var SCHEDULES = {
     D("8km 점검 + 수신호 복습",8),D("11km 주행",11),R("휴식일"),D("13km 코스 복습",13),
     D("가벼운 3km + 장비 점검",3),R("휴식 — 컨디션 조절 🎉")
   ],
-  elem_advanced: [
+  elem_lv4: [
     D("점검 라이딩 5km + 수신호 복습",5),D("8km 주행",8),R("휴식일"),
     D("10km + 후미 돕기(친구 챙기기) 연습",10),D("12km 주행",12),R("휴식일"),
     D("13km 1구간 코스 답사",13),D("가벼운 6km 회복",6),R("휴식일"),
@@ -448,40 +498,46 @@ var SCHEDULES = {
     D("13km 표선 완주 + 친구 챙기기",13),D("가벼운 5km",5),R("휴식일"),D("점검 3km + 장비 정비",3),
     R("휴식 — 1구간 리더 준비 완료 🎉")
   ],
-  mid_beginner: [
+  mid_lv1: [
     S("발 구르기 활주 + 균형 20분"),S("페달 주행 100m + 출발/정지"),S("8자·방향전환·수신호"),
     D("1km 연속 + 한 줄 주행",1),D("3km 해안길",3),D("5km 주행",5),R("휴식일"),
     D("7km + 보급 연습",7),D("10km 주행",10),R("휴식일"),D("12km 주행",12),D("13km 1구간 완주",13),
     R("휴식일"),D("8km 회복 + 언덕 연습",8),D("15km 주행",15),R("휴식일"),D("18km 주행",18),
     D("20km 주행",20),R("휴식일"),D("12km 인터벌",12),D("23km 도전",23),R("휴식일"),
     D("도로 주행 연습 8km",8),D("28km 롱라이드",28),D("회복 5km + 장비 점검",5),
-    R("휴식 — 지원차량 백업으로 실전! 🎉")
+    R("휴식 — 지원차량 백업으로 도전! 🎉")
   ],
-  mid_inter: [
+  mid_lv2: [
+    D("점검 3km + 수신호",3),D("5km 주행",5),D("7km 주행",7),R("휴식일"),
+    D("9km 주행",9),D("12km 1구간",12),R("휴식일"),D("14km 주행",14),D("16km + 보급",16),
+    R("휴식일"),D("18km 주행",18),D("10km 회복",10),R("휴식일"),D("20km 주행",20),D("22km 도전",22),
+    R("휴식일"),D("25km 롱라이드",25),D("8km 회복 + 언덕",8),R("휴식일"),
+    D("28km 도전(가능한 만큼)",28),D("가벼운 5km + 장비 점검",5),R("휴식 — 준비 끝 🎉")
+  ],
+  mid_lv3: [
     D("점검 5km + 수신호",5),D("8km 주행",8),R("휴식일"),D("12km 주행",12),D("13km 1구간",13),
     R("휴식일"),D("16km 주행",16),D("18km + 보급",18),R("휴식일"),D("20km 주행",20),
     D("12km 인터벌(빠르게)",12),R("휴식일"),D("23km 주행",23),D("8km 회복 + 언덕",8),R("휴식일"),
     D("26km 롱라이드",26),D("도로 주행 8km",8),R("휴식일"),D("30km 도전",30),D("10km 회복",10),
-    R("휴식일"),D("33km 풀코스 모의(가능하면)",33),D("가벼운 5km + 장비 점검",5),R("휴식 — 풀코스 실전! 🎉")
+    R("휴식일"),D("33km 풀코스 모의(가능하면)",33),D("가벼운 5km + 장비 점검",5),R("휴식 — 풀코스 도전! 🎉")
   ],
-  mid_advanced: [
+  mid_lv4: [
     D("8km 점검 + 수신호 복습",8),D("13km 1구간 답사",13),R("휴식일"),D("18km 주행",18),
     D("20km + 후미/인솔 연습",20),R("휴식일"),D("24km 주행",24),D("12km 인터벌",12),R("휴식일"),
     D("28km 롱라이드",28),D("도로 주행 10km",10),R("휴식일"),D("33km 풀코스 모의",33),
-    D("8km 회복",8),R("휴식일"),D("25km 마지막 롱라이드",25),D("10km 인솔 연습(저학년 페이스)",10),
-    R("휴식일"),D("점검 3km + 장비 정비",3),R("휴식 — 전체 리더로 실전! 🎉")
+    D("8km 회복",8),R("휴식일"),D("25km 마지막 롱라이드",25),D("10km 인솔 연습(여유 페이스)",10),
+    R("휴식일"),D("점검 3km + 장비 정비",3),R("휴식 — 전체 리더로 도전! 🎉")
   ]
 };
 
 /* ===== Firebase / 모드 ===== */
 var db=null, MODE="local";
 var firebaseConfig = {
-  apiKey: "AIzaSyDL6tysXskXH04MD_GTYB_jly9T9LCX81k",
-  authDomain: "jeju-bicycle.firebaseapp.com",
-  projectId: "jeju-bicycle",
-  storageBucket: "jeju-bicycle.firebasestorage.app",
-  messagingSenderId: "123440310582",
-  appId: "1:123440310582:web:39b5f1938c1d3e718e6b97"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT",
+  appId: "YOUR_APP_ID"
 };
 var FB_READY = (typeof firebase!=="undefined") && firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf("YOUR_")!==0;
 if(FB_READY){ try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); MODE="cloud"; }catch(e){ console.warn(e); MODE="local"; } }
@@ -490,6 +546,7 @@ if(FB_READY){ try{ firebase.initializeApp(firebaseConfig); db=firebase.database(
 function lsGet(k,def){ try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;} }
 function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
 var profile = lsGet("bike_profile", null);
+if(profile && profile.level){ var _lm={beginner:"lv1",inter:"lv3",advanced:"lv4"}; if(_lm[profile.level]) profile.level=_lm[profile.level]; }
 var logs = lsGet("bike_logs", {});
 var cfg = Object.assign({}, DEFAULT_CFG, lsGet("bike_config", {}));
 
@@ -499,7 +556,7 @@ function pad(n){return String(n).padStart(2,"0");}
 function dstr(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
 function todayStr(){return dstr(new Date());}
 function fmtDate(s){ if(!s) return ""; var p=s.split("-"); return p.length===3?(p[1]+"."+p[2]):s; }
-function planFor(p){ return SCHEDULES[p.group+"_"+p.level] || []; }
+function planFor(p){ return SCHEDULES[planFamily(p.group)+"_"+p.level] || SCHEDULES["mid_lv1"]; }
 function dday(){ var t=new Date((cfg.planDate||DEFAULT_CFG.planDate)+"T00:00:00"); var n=new Date(); n.setHours(0,0,0,0); return Math.round((t-n)/86400000); }
 function isRest(item){ return !!item.rest; }
 function completedCount(L){ return Object.keys(L||{}).length; }
@@ -512,7 +569,7 @@ function streakDays(L){
   if(!set[dstr(d)]){ d.setDate(d.getDate()-1); if(!set[dstr(d)]) return 0; }
   var n=0; while(set[dstr(d)]){ n++; d.setDate(d.getDate()-1); } return n;
 }
-function show(name){ ["login","main","settings","admin"].forEach(function(s){ $("screen-"+s).classList.toggle("hidden", s!==name); }); window.scrollTo(0,0); }
+function show(name){ ["login","main","settings","admin","board","courses"].forEach(function(s){ $("screen-"+s).classList.toggle("hidden", s!==name); }); window.scrollTo(0,0); }
 
 /* ===== 설정 동기화 ===== */
 function saveConfig(){ lsSet("bike_config",cfg); if(MODE==="cloud"){ try{ db.ref(DB_ROOT+"/config").set(cfg); }catch(e){} } }
@@ -689,22 +746,27 @@ function undoLast(){
   if(MODE==="cloud"){ try{ db.ref(DB_ROOT+"/logs/"+profile.uid+"/"+mx).remove(); }catch(e){} loadTeamTotals(); } else renderTeamLocal();
   renderMain();
 }
-function renderTeamBars(eKm,mKm){
-  var mx=Math.max(eKm,mKm,1);
-  $("barE").style.width=(eKm/mx*100)+"%"; $("kmE").textContent=Math.round(eKm)+"km";
-  $("barM").style.width=(mKm/mx*100)+"%"; $("kmM").textContent=Math.round(mKm)+"km";
+var TEAM_COLORS={elem:"#1b9aa0",mid:"#f4794e",adult:"#5b8def",couple:"#ec6aa0",family:"#5cb87f",club:"#9b7bd6"};
+function renderTeamRows(totals){
+  var keys=Object.keys(GROUPS).filter(function(g){return (totals[g]||0)>0;});
+  if(!keys.length){ $("teamBar").innerHTML='<small style="color:var(--muted)">아직 기록이 없어요.</small>'; return; }
+  keys.sort(function(a,b){return (totals[b]||0)-(totals[a]||0);});
+  var mx=Math.max.apply(null,keys.map(function(g){return totals[g];}).concat([1]));
+  $("teamBar").innerHTML=keys.map(function(g){
+    return '<div class="row"><span class="name">'+GROUPS[g]+'</span><div class="track"><div class="bar" style="width:'+(totals[g]/mx*100)+'%;background:'+(TEAM_COLORS[g]||"#1b9aa0")+'"></div></div><span class="km">'+Math.round(totals[g])+'km</span></div>';
+  }).join("");
 }
 function renderTeamLocal(){
-  renderTeamBars(profile.group==="elem"?totalKm(logs):0, profile.group==="mid"?totalKm(logs):0);
+  var t={}; t[profile.group]=totalKm(logs); renderTeamRows(t);
   $("teamNote").textContent="오프라인 모드 — 내 기록만 보여요. 함께 합산하려면 Firebase 설정.";
 }
 function loadTeamTotals(){
   if(MODE!=="cloud") return;
   Promise.all([db.ref(DB_ROOT+"/participants").once("value"),db.ref(DB_ROOT+"/logs").once("value")])
   .then(function(res){
-    var parts=res[0].val()||{}, all=res[1].val()||{}, eKm=0,mKm=0;
-    for(var uid in parts){ var g=parts[uid].group, lg=all[uid]||{}, s=0; for(var i in lg){ s+=Number(lg[i].km)||0; } if(g==="elem") eKm+=s; else if(g==="mid") mKm+=s; }
-    renderTeamBars(eKm,mKm); $("teamNote").textContent="";
+    var parts=res[0].val()||{}, all=res[1].val()||{}, t={};
+    for(var uid in parts){ var g=parts[uid].group, lg=all[uid]||{}, s=0; for(var i in lg){ s+=Number(lg[i].km)||0; } t[g]=(t[g]||0)+s; }
+    renderTeamRows(t); $("teamNote").textContent="";
   }).catch(function(){ $("teamNote").textContent=""; });
 }
 
@@ -772,18 +834,18 @@ function loadAdmin(){
   .catch(function(e){ $("aRows").innerHTML='<tr><td colspan="8">불러오기 실패: '+e.message+'</td></tr>'; });
 }
 function buildRow(uid,p,L){
-  var plan=SCHEDULES[p.group+"_"+p.level]||[], done=completedCount(L), tot=plan.length, last="";
+  var plan=SCHEDULES[planFamily(p.group)+"_"+p.level]||[], done=completedCount(L), tot=plan.length, last="";
   for(var i in L){ if(L[i].date && L[i].date>last) last=L[i].date; }
   return { uid:uid, name:p.name||"(이름없음)", group:p.group, level:p.level, done:done, tot:tot, pct:tot?Math.round(done/tot*100):0, streak:streakDays(L), km:totalKm(L), last:last };
 }
 function paintAdmin(rows){
-  var go={elem:0,mid:1}, lo={beginner:0,inter:1,advanced:2};
+  var go={elem:0,mid:1,adult:2,couple:3,family:4,club:5}, lo={lv1:0,lv2:1,lv3:2,lv4:3};
   rows.sort(function(a,b){ return (go[a.group]-go[b.group])||(lo[a.level]-lo[b.level])||a.name.localeCompare(b.name); });
   adminRows=rows; var today=todayStr();
   $("aTotal").textContent=rows.length;
   $("aToday").textContent=rows.filter(function(r){return r.last===today;}).length;
-  $("aElem").textContent=rows.filter(function(r){return r.group==="elem";}).length;
-  $("aMid").textContent=rows.filter(function(r){return r.group==="mid";}).length;
+  $("aKm").textContent=Math.round(rows.reduce(function(s,r){return s+(Number(r.km)||0);},0));
+  $("aAvg").textContent=(rows.length?Math.round(rows.reduce(function(s,r){return s+r.pct;},0)/rows.length):0)+"%";
   $("aRows").innerHTML = rows.length? rows.map(function(r){
     return '<tr><td>'+esc(r.name)+'</td><td>'+GROUPS[r.group]+'</td><td>'+LEVELS[r.level]+'</td>'+
       '<td class="c"><span class="prg"><i style="width:'+r.pct+'%"></i></span> '+r.pct+'%</td>'+
@@ -796,6 +858,67 @@ function exportCsv(){
   adminRows.forEach(function(r){ lines.push(['"'+r.name.replace(/"/g,'""')+'"',GROUPS[r.group],LEVELS[r.level],r.pct,r.done,r.tot,r.streak,r.km,r.last||""].join(",")); });
   var blob=new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8;"});
   var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="자전거훈련_진행상황_"+todayStr()+".csv"; a.click();
+}
+
+/* ===== 완주 인증 게시판 / 추천 코스 ===== */
+var REGIONS=["서울","부산","대구","인천","광주","대전","울산","세종","경기","강원","충북","충남","전북","전남","경북","경남","제주"];
+var likedSet=lsGet("bike_liked",{});
+function grpBadge(g){ return '<span class="badge">'+(GROUPS[g]||"")+'</span>'; }
+function offNote(){ return (MODE!=="cloud")? '<div class="note" style="margin-top:10px">오프라인 — 이 글은 이 기기에만 저장돼요. 함께 보려면 Firebase 설정.</div>' : ''; }
+
+function openBoard(){ show("board"); $("bdText").value=""; $("bdCount").textContent="0 / 200"; renderBoard(); }
+function postBoard(){
+  var t=$("bdText").value.trim(); if(!t) return;
+  var post={name:profile.name, group:profile.group, text:t, date:todayStr(), ts:Date.now()};
+  if(MODE==="cloud"){ try{ db.ref(DB_ROOT+"/board").push(post); }catch(e){} }
+  else { var a=lsGet("bike_board",[]); a.push(post); lsSet("bike_board",a); }
+  $("bdText").value=""; $("bdCount").textContent="0 / 200"; setTimeout(renderBoard,180);
+}
+function paintBoard(items){
+  items.sort(function(a,b){return (b.ts||0)-(a.ts||0);});
+  var html = items.length? items.map(function(p){
+    return '<div class="card" style="margin-top:10px"><div style="display:flex;align-items:center;gap:6px"><b style="font-family:\'Jua\'">'+esc(p.name||"익명")+'</b>'+grpBadge(p.group)+'<small style="margin-left:auto">'+esc(p.date||"")+'</small></div><div style="margin-top:8px;white-space:pre-wrap">'+esc(p.text||"")+'</div></div>';
+  }).join("") : '<div class="card" style="margin-top:10px"><small>아직 완주 소감이 없어요. 첫 소감을 남겨보세요!</small></div>';
+  $("bdList").innerHTML = offNote()+html;
+}
+function renderBoard(){
+  if(MODE==="cloud"){ db.ref(DB_ROOT+"/board").once("value").then(function(s){ var v=s.val()||{}; paintBoard(Object.keys(v).map(function(k){return v[k];})); }).catch(function(){ paintBoard([]); }); }
+  else { paintBoard(lsGet("bike_board",[])); }
+}
+
+function fillRegionSelects(){
+  if($("csRegion").options.length) return;
+  $("csRegion").innerHTML=REGIONS.map(function(r){return '<option value="'+r+'">'+r+'</option>';}).join("");
+  $("csFilter").innerHTML='<option value="">전체 지역</option>'+REGIONS.map(function(r){return '<option value="'+r+'">'+r+'</option>';}).join("");
+}
+function openCourses(){ fillRegionSelects(); show("courses"); $("csText").value=""; renderCourses(); }
+function postCourse(){
+  var t=$("csText").value.trim(); if(!t) return;
+  var rec={region:$("csRegion").value, name:profile.name, text:t, likes:0, ts:Date.now()};
+  if(MODE==="cloud"){ try{ db.ref(DB_ROOT+"/courses").push(rec); }catch(e){} }
+  else { var a=lsGet("bike_courses",[]); rec.id="c_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5); a.push(rec); lsSet("bike_courses",a); }
+  $("csText").value=""; setTimeout(renderCourses,180);
+}
+function likeCourse(id){
+  if(!id || likedSet[id]) return;
+  likedSet[id]=true; lsSet("bike_liked",likedSet);
+  if(MODE==="cloud"){ try{ db.ref(DB_ROOT+"/courses/"+id+"/likes").transaction(function(n){return (n||0)+1;}); }catch(e){} setTimeout(renderCourses,180); }
+  else { var a=lsGet("bike_courses",[]); a.forEach(function(r){ if(r.id===id) r.likes=(r.likes||0)+1; }); lsSet("bike_courses",a); renderCourses(); }
+}
+function paintCourses(items){
+  var f=$("csFilter").value;
+  if(f) items=items.filter(function(r){return r.region===f;});
+  items.sort(function(a,b){ return ((b.likes||0)-(a.likes||0)) || ((b.ts||0)-(a.ts||0)); });
+  var html = items.length? items.map(function(r){
+    return '<div class="card" style="margin-top:10px"><div style="display:flex;align-items:center;gap:6px"><span class="badge lv">'+esc(r.region||"")+'</span><b style="font-family:\'Jua\'">'+esc(r.name||"익명")+'</b></div>'+
+      '<div style="margin-top:8px">'+esc(r.text||"")+'</div>'+
+      '<button class="btn ghost" style="margin-top:10px;padding:9px" onclick="likeCourse(\''+r.id+'\')"'+(likedSet[r.id]?' disabled':'')+'>👍 공감 '+(r.likes||0)+'</button></div>';
+  }).join("") : '<div class="card" style="margin-top:10px"><small>이 지역엔 아직 추천이 없어요. 첫 코스를 추천해 보세요!</small></div>';
+  $("csList").innerHTML = offNote()+html;
+}
+function renderCourses(){
+  if(MODE==="cloud"){ db.ref(DB_ROOT+"/courses").once("value").then(function(s){ var v=s.val()||{}; paintCourses(Object.keys(v).map(function(k){var o=v[k]; o.id=k; return o;})); }).catch(function(){ paintCourses([]); }); }
+  else { paintCourses(lsGet("bike_courses",[])); }
 }
 
 /* ===== 이벤트 ===== */
@@ -815,6 +938,14 @@ function initEvents(){
   $("setPlanDate").addEventListener("change",updatePeriodInfo);
   $("btnToAdmin").addEventListener("click",openAdmin);
   $("btnAdminBack").addEventListener("click",function(){ show(profile?"main":"login"); });
+  $("btnBoard").addEventListener("click",openBoard);
+  $("btnBoardBack").addEventListener("click",function(){ show("main"); });
+  $("bdPost").addEventListener("click",postBoard);
+  $("bdText").addEventListener("input",function(){ $("bdCount").textContent=$("bdText").value.length+" / 200"; });
+  $("btnCourses").addEventListener("click",openCourses);
+  $("btnCoursesBack").addEventListener("click",function(){ show("main"); });
+  $("csPost").addEventListener("click",postCourse);
+  $("csFilter").addEventListener("change",renderCourses);
   $("btnPin").addEventListener("click",tryPin);
   $("inPin").addEventListener("keydown",function(e){ if(e.key==="Enter") tryPin(); });
   $("btnRefresh").addEventListener("click",loadAdmin);
@@ -825,5 +956,6 @@ function initEvents(){
 initLogin(); initEvents();
 if(profile){ enterMain(); } else { show("login"); }
 </script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("./sw.js").catch(function(){});});}</script>
 </body>
 </html>
