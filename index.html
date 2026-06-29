@@ -533,7 +533,6 @@ var SCHEDULES = {
 /* ===== Firebase / 모드 ===== */
 var db=null, MODE="local";
 var firebaseConfig = {
-  const firebaseConfig = {
   apiKey: "AIzaSyDL6tysXskXH04MD_GTYB_jly9T9LCX81k",
   authDomain: "jeju-bicycle.firebaseapp.com",
   databaseURL: "https://jeju-bicycle-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -660,7 +659,7 @@ function initLogin(){
   $("btnToAdmin").addEventListener("click",openAdmin);
   var sub=$("loginSub"); if(sub){ sub.textContent="매일 조금씩, 함께 "+(cfg.end||"목표 지점")+"까지! · 실전 "+fmtDate(cfg.planDate); }
   $("modeChip").innerHTML = (MODE==="cloud")
-    ? '<span class="dot on"></span>클라우드 연결됨 — 선생님이 진행상황을 봐요'
+    ? '<span class="dot on"></span>클라우드 연결됨 — 관리자가 진행상황을 봐요'
     : '<span class="dot off"></span>오프라인 — 이 기기에만 저장 (공유하려면 Firebase 설정)';
 }
 function startApp(){
