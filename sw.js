@@ -1,5 +1,5 @@
 // 제주 자전거 도전 - 서비스 워커 (오프라인 캐시)
-const CACHE = "jeju-bike-v3";
+const CACHE = "jeju-bike-v4";
 const ASSETS = [
   "./", "./index.html", "./manifest.webmanifest",
   "./icon-192.png", "./icon-512.png", "./icon-180.png", "./icon-512-maskable.png"
