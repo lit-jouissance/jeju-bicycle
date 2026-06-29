@@ -16,6 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="제주자전거">
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <style>
 :root{
   --basalt:#16212a; --ink:#1b2730; --muted:#5a6a72;
@@ -355,7 +356,6 @@ td.c,th.c{text-align:center}
     <button id="btnCourses" class="btn ghost">🗺️ 추천 코스</button>
     <button id="btnSettings" class="btn ghost">⚙️ 설정 — 코스 · 일정 · 레벨</button>
     <button class="btn ghost" onclick="show('login')">🏠 처음 화면으로</button>
-    <button class="btn ghost" onclick="if(confirm('이 기기에서 처음부터 새로 시작할까요?')){localStorage.removeItem('bike_profile');localStorage.removeItem('bike_logs');location.reload();}">🔄 다른 사람으로 시작</button>
     <div class="foot">기록은 <span id="footMode">이 기기</span>에 저장돼요 · 제주 자전거 · jeju-bicycle</div>
   </section>
 
@@ -396,10 +396,11 @@ td.c,th.c{text-align:center}
     <div class="adminhead"><h2>👀 관리자 대시보드</h2>
       <button id="btnAdminBack" class="btn ghost" style="width:auto;padding:9px 14px;margin:0;font-size:14px">← 돌아가기</button></div>
     <div id="pinGate" class="card">
-      <h2>관리자 확인</h2><small>참가자 진행상황을 보려면 PIN을 입력하세요.</small>
-      <div class="pinbox"><input id="inPin" type="password" inputmode="numeric" maxlength="6" placeholder="••••"/>
-        <button id="btnPin" class="btn sea" style="width:auto;margin:0;padding:0 20px">확인</button></div>
-      <div id="pinErr" class="note hidden">PIN이 맞지 않아요.</div>
+      <h2>관리자 로그인</h2><small>관리자 이메일과 비밀번호로 로그인하세요.</small>
+      <input id="inAdminId" class="txt" type="email" placeholder="이메일" autocomplete="username" style="margin-top:8px"/>
+      <div class="pinbox" style="margin-top:8px"><input id="inPin" type="password" placeholder="비밀번호" autocomplete="current-password"/>
+        <button id="btnPin" class="btn sea" style="width:auto;margin:0;padding:0 20px">로그인</button></div>
+      <div id="pinErr" class="note hidden">아이디 또는 비밀번호가 맞지 않아요.</div>
     </div>
     <div id="adminBody" class="hidden">
       <div class="sumgrid">
@@ -454,7 +455,7 @@ td.c,th.c{text-align:center}
 
 <script>
 /* ===== 설정값 ===== */
-var ADMIN_PIN = "1360";        // 선생님 PIN (원하는 숫자로 변경)
+// 관리자 로그인은 Firebase 인증(이메일/비밀번호)으로 처리됩니다. 계정은 Firebase 콘솔에서 만들어요.
 var DB_ROOT  = "bike2026";
 // 기본 코스·일정 — 앱의 '설정'에서 언제든 변경 가능
 var DEFAULT_CFG = { start:"남원", mid:"표선", end:"성산일출봉", startDate:"2026-09-05", planDate:"2026-10-10" };
@@ -533,7 +534,7 @@ var SCHEDULES = {
 };
 
 /* ===== Firebase / 모드 ===== */
-var db=null, MODE="local";
+var db=null, auth=null, MODE="local";
 var firebaseConfig = {
   apiKey: "AIzaSyDL6tysXskXH04MD_GTYB_jly9T9LCX81k",
   authDomain: "jeju-bicycle.firebaseapp.com",
@@ -545,7 +546,7 @@ var firebaseConfig = {
 };
 
 var FB_READY = (typeof firebase!=="undefined") && firebaseConfig.apiKey && firebaseConfig.apiKey.indexOf("YOUR_")!==0;
-if(FB_READY){ try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); MODE="cloud"; }catch(e){ console.warn(e); MODE="local"; } }
+if(FB_READY){ try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); MODE="cloud"; try{ auth=firebase.auth(); auth.setPersistence(firebase.auth.Auth.Persistence.NONE); }catch(e2){ auth=null; } }catch(e){ console.warn(e); MODE="local"; } }
 
 /* ===== 저장 ===== */
 function lsGet(k,def){ try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;} }
@@ -822,8 +823,16 @@ function renameUser(){
 var adminUnlocked=false, adminRows=[];
 function openAdmin(){ show("admin"); $("pinGate").classList.toggle("hidden",adminUnlocked); $("adminBody").classList.toggle("hidden",!adminUnlocked); if(adminUnlocked) loadAdmin(); }
 function tryPin(){
-  if($("inPin").value===String(ADMIN_PIN)){ adminUnlocked=true; $("pinErr").classList.add("hidden"); $("pinGate").classList.add("hidden"); $("adminBody").classList.remove("hidden"); loadAdmin(); }
-  else $("pinErr").classList.remove("hidden");
+  var email=$("inAdminId").value.trim(), pw=$("inPin").value;
+  $("pinErr").classList.add("hidden");
+  if(MODE!=="cloud" || !auth){ $("pinErr").textContent="관리자 로그인은 인터넷(클라우드) 연결이 필요해요."; $("pinErr").classList.remove("hidden"); return; }
+  if(!email || !pw){ return; }
+  $("btnPin").disabled=true; var _t=$("btnPin").textContent; $("btnPin").textContent="확인 중…";
+  auth.signInWithEmailAndPassword(email, pw).then(function(){
+    adminUnlocked=true; $("pinGate").classList.add("hidden"); $("adminBody").classList.remove("hidden"); loadAdmin();
+  }).catch(function(err){
+    $("pinErr").textContent="이메일 또는 비밀번호가 맞지 않아요."; $("pinErr").classList.remove("hidden");
+  }).then(function(){ $("btnPin").disabled=false; $("btnPin").textContent=_t; });
 }
 function loadAdmin(){
   if(MODE!=="cloud"){
