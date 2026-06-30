@@ -60,6 +60,9 @@ textarea.txt{resize:vertical;min-height:54px}
 .btn{display:block;width:100%;padding:15px;font-family:"Jua",sans-serif;font-size:18px;color:#fff;background:linear-gradient(135deg,var(--sunrise),#ff9b62);box-shadow:0 8px 18px rgba(244,121,78,.32);margin-top:16px}
 .menu{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .menu .btn{flex:1 1 0;width:auto;min-width:80px;margin:0;padding:12px 6px;font-size:13px;box-shadow:0 4px 10px rgba(0,0,0,.06)}
+.tabbar{display:flex;gap:8px;margin:0 0 12px}
+.tabbtn{flex:1;padding:11px;border-radius:12px;background:#fff;border:1px solid rgba(0,0,0,.08);font-family:"Jua",sans-serif;font-size:16px;color:var(--muted)}
+.tabbtn.on{background:linear-gradient(135deg,var(--sunrise),#ff9b62);color:#fff;border-color:transparent;box-shadow:0 6px 14px rgba(244,121,78,.28)}
 .btn:disabled{filter:grayscale(.7);opacity:.55;box-shadow:none}
 .btn.sea{background:linear-gradient(135deg,var(--sea),#34b6ba);box-shadow:0 8px 18px rgba(27,154,160,.3)}
 .btn.ghost{background:#fff;color:var(--sea-deep);border:1.5px solid var(--line);box-shadow:none}
@@ -296,7 +299,7 @@ td.c,th.c{text-align:center}
           <label class="fld">팀 이름</label>
           <input id="inTeamName" class="txt" placeholder="예: 남원 라이딩팀"/>
           <small>팀을 만든 분이 리더(대표)가 돼요. 아래 ‘이름’이 리더로 등록됩니다.</small>
-          <label class="fld">우리 모임 (팀 분류)</label>
+          <label class="fld">우리 팀</label>
           <div class="choices" id="teamGrpChoices">
             <div class="choice" data-grp="elem"><b>초등</b></div>
             <div class="choice" data-grp="mid"><b>중·고등</b></div>
@@ -317,14 +320,11 @@ td.c,th.c{text-align:center}
       <label class="fld">이름</label>
       <input id="inName" class="txt" placeholder="이름을 적어요" autocomplete="off"/>
       <div id="soloGrpWrap">
-      <label class="fld">우리 모임</label>
+      <label class="fld">구분</label>
       <div class="choices" id="grpChoices">
-        <div class="choice" data-grp="elem"><b>초등</b></div>
-        <div class="choice" data-grp="mid"><b>중·고등</b></div>
+        <div class="choice" data-grp="elem"><b>초등학생</b></div>
+        <div class="choice" data-grp="mid"><b>중고등학생</b></div>
         <div class="choice" data-grp="adult"><b>성인</b></div>
-        <div class="choice" data-grp="couple"><b>연인</b></div>
-        <div class="choice" data-grp="family"><b>가족</b></div>
-        <div class="choice" data-grp="club"><b>동호인</b></div>
       </div></div>
       <label class="fld">내 자전거 실력</label>
       <div class="choices" id="lvlChoices">
@@ -348,6 +348,11 @@ td.c,th.c{text-align:center}
         <span id="mGrp" class="badge">초등부</span><span id="mLvl" class="badge lv">초심자</span></div>
       <div class="dday">D-<b id="mDday">0</b><span id="ddayLbl">실전까지</span></div>
     </div>
+    <div class="tabbar" id="mainTabs">
+      <button class="tabbtn on" data-tab="train">🚴 훈련</button>
+      <button class="tabbtn" data-tab="real">🏁 실전</button>
+    </div>
+    <div id="tabTrain">
     <div class="card">
       <div class="route">
         <div class="route-line"></div>
@@ -387,6 +392,44 @@ td.c,th.c{text-align:center}
     <div class="card"><h2>함께 달린 거리</h2>
       <div class="teambar" id="teamBar"></div><small id="teamNote"></small></div>
     <div class="card sched"><details><summary>전체 훈련 일정 펼쳐보기 ▾</summary><ol id="schedList"></ol></details></div>
+    </div>
+    <div id="tabReal" class="hidden">
+      <div class="card">
+        <h2>실전 설정 <span id="realWho" class="badge"></span></h2>
+        <div id="realEdit">
+          <label class="fld">방식</label>
+          <div class="choices" id="realModeChoices">
+            <div class="choice sel" data-rmode="dist"><b>거리</b></div>
+            <div class="choice" data-rmode="course"><b>코스</b></div>
+          </div>
+          <div id="realDist">
+            <label class="fld">목표 거리 (km)</label>
+            <input id="inRealKm" class="txt" type="number" inputmode="decimal" min="0" step="1" placeholder="예: 60"/>
+          </div>
+          <div id="realCourse" class="hidden">
+            <label class="fld">코스</label>
+            <div class="logrow">
+              <div class="f"><label>출발</label><input id="inRealStart" class="txt" placeholder="예: 남원"/></div>
+              <div class="f"><label>중간</label><input id="inRealMid" class="txt" placeholder="예: 표선"/></div>
+              <div class="f"><label>도착</label><input id="inRealEnd" class="txt" placeholder="예: 성산"/></div>
+            </div>
+          </div>
+          <label class="fld">목표일 (선택)</label>
+          <input id="inRealDate" class="txt" type="date"/>
+          <button id="btnRealSave" class="btn">실전 설정 저장</button>
+        </div>
+        <div id="realView" class="hidden"></div>
+      </div>
+      <div class="card">
+        <h2>실전 기록</h2>
+        <div id="realProgress"></div>
+        <div class="logrow" style="margin-top:8px">
+          <div class="f" style="flex:1 1 100%"><label>오늘 탄 거리 (km)</label><input id="inRealAdd" class="txt" type="number" inputmode="decimal" min="0" step="0.5" placeholder="예: 12"/></div>
+        </div>
+        <button id="btnRealAdd" class="btn sea">거리 추가</button>
+        <div id="realTeam"></div>
+      </div>
+    </div>
     <div class="menu">
       <button id="btnBoard" class="btn ghost">🏅 완주 게시판</button>
       <button id="btnCourses" class="btn ghost">🗺️ 추천 코스</button>
@@ -1000,6 +1043,78 @@ function adminResetAll(){
   if(t!=="초기화"){ alert("취소되었습니다."); return; }
   db.ref(DB_ROOT).remove().then(function(){ alert("전체 데이터를 초기화했어요."); loadAdmin(); }).catch(function(){ alert("초기화 중 오류가 발생했어요."); });
 }
+var realKm = lsGet("bike_realkm", 0);
+var realCfg = null;
+function realIsTeam(){ return !!(profile && profile.teamId); }
+function realCanEdit(){ return realIsTeam() ? (profile.role==="leader") : true; }
+function showTab(t){
+  $("mainTabs").querySelectorAll(".tabbtn").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-tab")===t); });
+  $("tabTrain").classList.toggle("hidden", t!=="train");
+  $("tabReal").classList.toggle("hidden", t!=="real");
+  if(t==="real") openReal();
+}
+function openReal(){
+  $("realWho").textContent = realIsTeam()? ("팀 "+(profile.teamName||"")) : "개인";
+  var after=function(){ loadRealCfg(function(){ renderReal(); }); };
+  if(MODE==="cloud" && profile && profile.uid){
+    db.ref(DB_ROOT+"/real/"+profile.uid).once("value").then(function(s){ var v=s.val(); if(typeof v==="number"){ realKm=v; lsSet("bike_realkm",realKm); } after(); }).catch(after);
+  } else after();
+}
+function loadRealCfg(cb){
+  if(realIsTeam() && MODE==="cloud"){
+    db.ref(DB_ROOT+"/teams/"+profile.teamId+"/real").once("value").then(function(s){ realCfg=s.val()||null; cb&&cb(); }).catch(function(){ realCfg=null; cb&&cb(); });
+  } else { realCfg=(profile&&profile.real)||null; cb&&cb(); }
+}
+function selRealMode(m){
+  $("realModeChoices").querySelectorAll(".choice").forEach(function(x){ x.classList.toggle("sel", x.getAttribute("data-rmode")===m); });
+  $("realDist").classList.toggle("hidden", m!=="dist"); $("realCourse").classList.toggle("hidden", m!=="course");
+}
+function curRealMode(){ var c=$("realModeChoices").querySelector(".choice.sel"); return c?c.getAttribute("data-rmode"):"dist"; }
+function realSummary(cfg){
+  if(cfg && cfg.mode==="course") return '코스: <b>'+esc(cfg.start||"-")+' → '+esc(cfg.mid||"-")+' → '+esc(cfg.end||"-")+'</b>'+(cfg.date?(' · 목표일 '+esc(cfg.date)):'');
+  return '목표 거리: <b>'+((cfg&&cfg.targetKm)||0)+'km</b>'+(cfg&&cfg.date?(' · 목표일 '+esc(cfg.date)):'');
+}
+function renderReal(){
+  var canEdit=realCanEdit(), cfg=realCfg||{mode:"dist"};
+  $("realEdit").classList.toggle("hidden", !canEdit);
+  $("realView").classList.toggle("hidden", canEdit);
+  selRealMode(cfg.mode||"dist");
+  $("inRealKm").value=cfg.targetKm||""; $("inRealStart").value=cfg.start||""; $("inRealMid").value=cfg.mid||""; $("inRealEnd").value=cfg.end||""; $("inRealDate").value=cfg.date||"";
+  if(!canEdit){ $("realView").innerHTML = realCfg? realSummary(realCfg) : '<small style="color:var(--muted)">리더가 아직 실전을 설정하지 않았어요.</small>'; }
+  renderRealProgress(); renderRealTeam();
+}
+function saveReal(){
+  var cfg={ mode:curRealMode(), date:$("inRealDate").value||"" };
+  if(cfg.mode==="dist") cfg.targetKm=Number($("inRealKm").value)||0;
+  else { cfg.start=$("inRealStart").value.trim(); cfg.mid=$("inRealMid").value.trim(); cfg.end=$("inRealEnd").value.trim(); }
+  realCfg=cfg;
+  if(realIsTeam()){ if(MODE==="cloud"){ try{ db.ref(DB_ROOT+"/teams/"+profile.teamId+"/real").set(cfg); }catch(e){} } }
+  else { profile.real=cfg; lsSet("bike_profile",profile); }
+  renderReal(); alert("실전 설정을 저장했어요.");
+}
+function addReal(){
+  var x=Number($("inRealAdd").value)||0; if(x<=0) return;
+  realKm+=x; lsSet("bike_realkm",realKm);
+  if(MODE==="cloud" && profile && profile.uid){ try{ db.ref(DB_ROOT+"/real/"+profile.uid).set(realKm); }catch(e){} }
+  $("inRealAdd").value=""; renderRealProgress(); renderRealTeam();
+}
+function renderRealProgress(){
+  var cfg=realCfg||{mode:"dist"};
+  if(cfg.mode==="course"){
+    $("realProgress").innerHTML = realSummary(cfg)+'<div style="margin-top:8px">내 실전 누적: <b>'+Math.round(realKm)+'km</b></div>';
+  } else {
+    var tgt=cfg.targetKm||0, pct=tgt?Math.min(100,Math.round(realKm/tgt*100)):0;
+    $("realProgress").innerHTML = '<div class="prog-meta"><span class="pct">'+pct+'%</span><small>'+Math.round(realKm)+' / '+tgt+'km</small></div><div class="route" style="margin-top:6px"><div class="route-line"></div><div class="route-fill" style="width:'+pct+'%"></div></div>';
+  }
+}
+function renderRealTeam(){
+  if(!realIsTeam() || MODE!=="cloud"){ $("realTeam").innerHTML=""; return; }
+  Promise.all([db.ref(DB_ROOT+"/real").once("value"), db.ref(DB_ROOT+"/participants").once("value")]).then(function(r){
+    var real=r[0].val()||{}, parts=r[1].val()||{}, sum=0, n=0;
+    for(var uid in parts){ if(parts[uid] && parts[uid].teamId===profile.teamId){ sum+=Number(real[uid])||0; n++; } }
+    $("realTeam").innerHTML='<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,.06)">팀 실전 누적: <b>'+Math.round(sum)+'km</b> <small style="color:var(--muted)">('+n+'명)</small></div>';
+  }).catch(function(){ $("realTeam").innerHTML=""; });
+}
 var teamData=null;
 function setupTeamMgmt(){
   var card=$("teamMgmtCard");
@@ -1184,6 +1299,10 @@ function initEvents(){
   $("btnAddMember").addEventListener("click",addMember);
   $("btnSetPw").addEventListener("click",setTeamPw);
   $("pwDisable").addEventListener("change",toggleTeamPw);
+  $("mainTabs").querySelectorAll(".tabbtn").forEach(function(b){ b.addEventListener("click",function(){ showTab(b.getAttribute("data-tab")); }); });
+  $("realModeChoices").querySelectorAll(".choice").forEach(function(c){ c.addEventListener("click",function(){ selRealMode(c.getAttribute("data-rmode")); }); });
+  $("btnRealSave").addEventListener("click",saveReal);
+  $("btnRealAdd").addEventListener("click",addReal);
   bindChoices("setGrpChoices",pickSet,"grp","data-grp",updatePeriodInfo);
   bindChoices("setLvlChoices",pickSet,"lvl","data-lvl",updatePeriodInfo);
   ["setStart","setMid","setEnd"].forEach(function(id){ $(id).addEventListener("input",updateMapSet); });
